@@ -1,0 +1,6 @@
+framework module Pods_AdaptiveReadingTests {
+  umbrella header "Pods-AdaptiveReadingTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

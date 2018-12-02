@@ -1,0 +1,16 @@
+PODS:
+  - AttributedTextView (1.2.3)
+
+DEPENDENCIES:
+  - AttributedTextView
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AttributedTextView
+
+SPEC CHECKSUMS:
+  AttributedTextView: 4c073150101402f0420ac3016ca4610bab156726
+
+PODFILE CHECKSUM: 7d4fccb9bf9ed99fd1eb3d2eee5e4f71a618ff89
+
+COCOAPODS: 1.5.3
