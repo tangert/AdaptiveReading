@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		363B16F621B4E2E300FB258B /* DataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B16F521B4E2E300FB258B /* DataFrame.swift */; };
+		363B16F821B4E87F00FB258B /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B16F721B4E87F00FB258B /* Subject.swift */; };
+		363B16FA21B4E89800FB258B /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B16F921B4E89800FB258B /* Session.swift */; };
+		363B16FE21B4EA5600FB258B /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363B16FD21B4EA5600FB258B /* Enums.swift */; };
 		3663C1342197839900997533 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3663C1332197839900997533 /* AppDelegate.swift */; };
 		3663C1362197839900997533 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 3663C1352197839900997533 /* art.scnassets */; };
 		3663C1382197839900997533 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3663C1372197839900997533 /* ViewController.swift */; };
@@ -41,6 +45,10 @@
 /* Begin PBXFileReference section */
 		1461D507B522EB004499EF37 /* Pods_AdaptiveReading.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AdaptiveReading.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2EB8512CBEB5FD25F4D3BB1B /* Pods-AdaptiveReadingTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdaptiveReadingTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AdaptiveReadingTests/Pods-AdaptiveReadingTests.release.xcconfig"; sourceTree = "<group>"; };
+		363B16F521B4E2E300FB258B /* DataFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFrame.swift; sourceTree = "<group>"; };
+		363B16F721B4E87F00FB258B /* Subject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subject.swift; sourceTree = "<group>"; };
+		363B16F921B4E89800FB258B /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		363B16FD21B4EA5600FB258B /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		3663C1302197839900997533 /* AdaptiveReading.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AdaptiveReading.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3663C1332197839900997533 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3663C1352197839900997533 /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -106,6 +114,25 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		363B16FB21B4E8AF00FB258B /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				363B16F721B4E87F00FB258B /* Subject.swift */,
+				363B16F921B4E89800FB258B /* Session.swift */,
+				363B16F521B4E2E300FB258B /* DataFrame.swift */,
+				363B16FD21B4EA5600FB258B /* Enums.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		363B16FC21B4E8BD00FB258B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3663C1372197839900997533 /* ViewController.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		3663C1272197839900997533 = {
 			isa = PBXGroup;
 			children = (
@@ -133,7 +160,8 @@
 			children = (
 				3663C1332197839900997533 /* AppDelegate.swift */,
 				3663C1352197839900997533 /* art.scnassets */,
-				3663C1372197839900997533 /* ViewController.swift */,
+				363B16FC21B4E8BD00FB258B /* Views */,
+				363B16FB21B4E8AF00FB258B /* Data */,
 				36E5D9C621B46B090045A081 /* Extensions.swift */,
 				3663C1392197839900997533 /* Main.storyboard */,
 				3663C13C2197839A00997533 /* Assets.xcassets */,
@@ -357,12 +385,14 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-AdaptiveReading/Pods-AdaptiveReading-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AttributedTextView/AttributedTextView.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftCSVExport/SwiftCSVExport.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AttributedTextView.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftCSVExport.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -399,8 +429,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				3663C1382197839900997533 /* ViewController.swift in Sources */,
+				363B16F821B4E87F00FB258B /* Subject.swift in Sources */,
+				363B16FA21B4E89800FB258B /* Session.swift in Sources */,
 				36E5D9C721B46B090045A081 /* Extensions.swift in Sources */,
+				363B16FE21B4EA5600FB258B /* Enums.swift in Sources */,
 				3663C1342197839900997533 /* AppDelegate.swift in Sources */,
+				363B16F621B4E2E300FB258B /* DataFrame.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

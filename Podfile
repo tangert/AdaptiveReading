@@ -18,5 +18,6 @@ target 'AdaptiveReading' do
   end
 
 pod 'AttributedTextView'
+pod 'SwiftCSVExport'
 
 end

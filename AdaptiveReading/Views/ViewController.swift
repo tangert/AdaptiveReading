@@ -18,8 +18,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     @IBOutlet weak var eyePositionIndicatorCenterView: UIView!
     @IBOutlet weak var attrTextView: AttributedTextView!
     
-    var faceNode: SCNNode = SCNNode()
+    // MARK: Data export and collection
+    // Main dataframe
+    var df: DataFrame = DataFrame()
+    var subject: Subject = Subject()
+    var session: Session = Session()
+
+    // Intermediate data structures
+    var eyeLookAtPositionXs: [CGFloat] = []
+    var eyeLookAtPositionYs: [CGFloat] = []
     
+    // MARK: ARKit nodes
+    
+    var faceNode: SCNNode = SCNNode()
     var eyeLNode: SCNNode = {
         let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
         geometry.radialSegmentCount = 3
@@ -32,7 +43,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         parentNode.addChildNode(node)
         return parentNode
     }()
-    
     var eyeRNode: SCNNode = {
         let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
         geometry.radialSegmentCount = 3
@@ -66,9 +76,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         return SCNNode(geometry: screenGeometry)
     }()
     
-    var eyeLookAtPositionXs: [CGFloat] = []
-    var eyeLookAtPositionYs: [CGFloat] = []
-    
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return UIStatusBarStyle.lightContent
     }
@@ -76,6 +83,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Setup DataFrame
+        // Set the headers
+        df.header = ["index", "subjectID", "condition", "testType", "timestamp", "gazeX", "gazeY", "estLine", "estText"]
         
         // Setup Design Elements
         eyePositionIndicatorView.layer.cornerRadius = eyePositionIndicatorView.bounds.width / 2
@@ -101,7 +111,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         eyeRNode.addChildNode(lookAtTargetEyeRNode)
         
         // Set LookAtTargetEye at 2 meters away from the center of eyeballs to create segment vector
-        let distance: Float = 2
+        let distance: Float = 1
         lookAtTargetEyeLNode.position.z = distance
         lookAtTargetEyeRNode.position.z = distance
         
@@ -131,12 +141,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     }
     
     // MARK: - ARSCNViewDelegate
-    
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        
         faceNode.transform = node.transform
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
-        
         update(withFaceAnchor: faceAnchor)
     }
     
@@ -144,7 +151,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     // Where does this come from?
     let heightCompensation: CGFloat = 312
     
-    func highlightContent(at position: CGPoint, in textView: AttributedTextView, with granularity: UITextGranularity) {
+    func highlightContent(at position: CGPoint,
+                          in textView: AttributedTextView,
+                          with granularity: UITextGranularity) {
+        
         
         var point = position
         let fontSize: CGFloat = 24
@@ -155,7 +165,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         point.y += textView.contentOffset.y
         
         // Calculations for lines to highlight
-        let lineFactor: CGFloat = 3 // amount of lines above and below the selected point that you will highlight
+        let lineFactor: CGFloat = 2 // amount of lines above and below the selected point that you will highlight
         let yOffset = lineHeight * lineFactor
         let startPoint = CGPoint(x: point.x, y: point.y - yOffset)
         let endPoint = CGPoint(x: point.x, y: point.y + yOffset)
@@ -177,6 +187,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         let highlightedOpacity: CGFloat = 0.9
         let normalOpacity: CGFloat = 0.4
         
+        // Create the attributes for the normal / highlighted portions of the text
         let normalAttrs: [NSAttributedString.Key: Any] = [.font: font,
                                                           .foregroundColor: UIColor.black.withAlphaComponent(normalOpacity)]
         
@@ -205,10 +216,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         // Apply the text back to the view
         // FIXME: Animate
-        let transition = CATransition()
-        transition.duration = 0.15
-        transition.type = CATransitionType.fade
-        textView.layer.add(transition, forKey: nil)
+//        let transition = CATransition()
+//        transition.duration = 0.15
+//        transition.type = CATransitionType.fade
+//        textView.layer.add(transition, forKey: nil)
+        
         textView.attributedText = allAttributed
     }
     
@@ -253,24 +265,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             // Calculate distance of the eyes to the camera
             let distanceL = self.eyeLNode.worldPosition - SCNVector3Zero
             let distanceR = self.eyeRNode.worldPosition - SCNVector3Zero
-            //            let distance = (distanceL.length() + distanceR.length())/2
+            let _ = (distanceL.length() + distanceR.length())/2
             
             let xOffset: CGFloat = self.phoneScreenPointSize.width/2
             let yOffset: CGFloat = self.phoneScreenPointSize.height/2
             
             let adjustedX = CGFloat(round(smoothEyeLookAtPositionX + xOffset))
+            let indicatorX = adjustedX - xOffset
+
             let adjustedY = CGFloat(round(smoothEyeLookAtPositionY + yOffset))
             let eyePoint = CGPoint(x: adjustedX, y: adjustedY)
             
-            // For some reason the position is off
-            var indicatorX = adjustedX - xOffset
-            //            if adjustedX < self.phoneScreenPointSize.width/2 {
-            //                indicatorX -= xOffset
-            //            }
-            
             // Update UI
-            self.eyePositionIndicatorView.transform = CGAffineTransform(translationX: indicatorX - self.eyePositionIndicatorView.bounds.width/2, y: adjustedY - yOffset)
-            self.highlightContent(at: eyePoint, in: self.attrTextView, with: .line)
+            self.eyePositionIndicatorView.transform = CGAffineTransform(translationX: indicatorX, y: adjustedY - yOffset)
+            self.highlightContent(at: eyePoint, in: self.attrTextView, with: .sentence)
         }
         
     }
