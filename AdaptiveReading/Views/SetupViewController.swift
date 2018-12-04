@@ -16,6 +16,8 @@ class SetupViewController: UIViewController {
     @IBOutlet weak var participantIDField: UITextField!
     @IBOutlet weak var testTypeSelector: UISegmentedControl!
     @IBOutlet weak var startButton: UIButton!
+    @IBOutlet weak var debugSwitch: UISwitch!
+    @IBOutlet weak var recordDataSwitch: UISwitch!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +32,8 @@ class SetupViewController: UIViewController {
             vc?.highlighted = highlightedSelector.selectedSegmentIndex == 0 ? true : false
             vc?.testType = testTypeSelector.selectedSegmentIndex == 0 ? "Pre" : "Post"
             vc?.textType = textTypeSelector.selectedSegmentIndex == 0 ? "A" : "B"
+            vc?.debugmodeOn = !debugSwitch.isOn // wtf
+            vc?.recordingData = recordDataSwitch.isOn
         }
     }
 }

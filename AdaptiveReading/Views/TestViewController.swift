@@ -33,6 +33,9 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     var highlighted: Bool!
     var textType: String!
     var testType: String!
+
+    var debugmodeOn: Bool!
+    var recordingData: Bool!
     
     ///////////////////////////////////////
     ///////////////////////////////////////
@@ -45,9 +48,10 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     // Intermediate data structures
     var eyeLookAtPositionXs: [CGFloat] = []
     var eyeLookAtPositionYs: [CGFloat] = []
+    var currentStartingRange: UITextRange! = UITextRange()
+    var currentEndingRange: UITextRange! = UITextRange()
     
     // MARK: ARKit nodes
-    
     var faceNode: SCNNode = SCNNode()
     var eyeLNode: SCNNode = {
         let geometry = SCNCone(topRadius: 0.005, bottomRadius: 0, height: 0.2)
@@ -84,17 +88,14 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     let phoneScreenPointSize = CGSize(width: 375, height: 812)
     
     // blinking threshold
-    // need to set this individually for each user...
+    // need to set this individually for each user...?
     let blinkThreshold: Float = 0.35
     
     var virtualPhoneNode: SCNNode = SCNNode()
-    
     var virtualScreenNode: SCNNode = {
-        
         let screenGeometry = SCNPlane(width: 1, height: 1)
         screenGeometry.firstMaterial?.isDoubleSided = true
         screenGeometry.firstMaterial?.diffuse.contents = UIColor.green
-        
         return SCNNode(geometry: screenGeometry)
     }()
     
@@ -107,7 +108,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         
         // Setup DataFrame
         // Set the headers
-        df.header = ["participantID", "highlighted", "testType", "textType", "timestamp", "gazeX", "gazeY", "eyeBlinkRight", "eyeBlinkLeft", "estText"]
+        df.header = ["participantID", "highlighted", "testType", "textType", "timestamp", "gazeX", "gazeY", "eyeBlinkRight", "eyeBlinkLeft", "browInnerUp", "browOuterRightDown", "browOuterLeftDown", "estText"]
         df.name = "participant-\(self.participantID!)-\(self.testType!)"
         
         // Setup Design Elements
@@ -133,6 +134,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         eyeLNode.addChildNode(lookAtTargetEyeLNode)
         eyeRNode.addChildNode(lookAtTargetEyeRNode)
         
+        
         // Set LookAtTargetEye at 2 meters away from the center of eyeballs to create segment vector
         let distance: Float = 1
         lookAtTargetEyeLNode.position.z = distance
@@ -147,6 +149,11 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         // MARK: EXPERIMENTAL VARIABLE SETUP
         attrTextView.text = self.textType == "A" ? TEXT_A : TEXT_B
         attrTextView.font = UIFont.systemFont(ofSize: FONT_SIZE, weight: UIFont.Weight.regular)
+        
+        if debugmodeOn == true {
+            sceneView.alpha = 0
+            eyePositionIndicatorView.alpha = 0
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -171,7 +178,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     @IBAction func donePressed(_ sender: Any) {
         // Done pressed will save a CSV of the current session to the phone!
         // Avoid duplicate exports
-        if !done {
+        if !done && recordingData {
             df.toCSV()
         }
         done = true
@@ -229,43 +236,63 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             return nil
         }
         
-        if self.highlighted {
+        //
+        if endingRange != currentEndingRange && startingRange != currentStartingRange {
             
-            // Adjust word range to include whole line and various lines above it on demand
-            let highlightedOpacity: CGFloat = 0.9
-            let normalOpacity: CGFloat = 0.25
+            print("Changing area")
             
-            // Create the attributes for the normal / highlighted portions of the text
-            let normalAttrs: [NSAttributedString.Key: Any] = [.font: font,
-                                                              .foregroundColor: UIColor.black.withAlphaComponent(normalOpacity)]
+            // Only perform the highlighting if there are changes
+            currentEndingRange = endingRange
+            currentStartingRange = startingRange
             
-            let highlightedAttrs: [NSAttributedString.Key: Any] = [.font: font,
-                                                                   .foregroundColor: UIColor.black.withAlphaComponent(highlightedOpacity)]
-            
-            
-            // Range calculations
-            let wholeOffset = textView.offset(from: textView.beginningOfDocument, to: textView.endOfDocument)
-            let wholeRange = NSRange(location: 0, length: wholeOffset)
-            
-            // Now that we have both the starting and ending lines, we can create the entire selected range and apply styles across it
-            let selectedRangeStart = textView.offset(from: textView.beginningOfDocument, to: startingRange.start)
-            let selectedRangeEnd = textView.offset(from: textView.beginningOfDocument, to: endingRange.end)
-            
-            // Only change the te
+            if self.highlighted {
+                
+                // TODO: Split up the range into a gradient
+                
+                // Adjust word range to include whole line and various lines above it on demand
+                let highlightedOpacity: CGFloat = 1.0
+                let semiHighlightedOpacity: CGFloat = 0.5
+                let normalOpacity: CGFloat = 0.25
+                
+                // Create the attributes for the normal / highlighted portions of the text
+                let normalAttrs: [NSAttributedString.Key: Any] = [.font: font,
+                                                                  .foregroundColor: UIColor.black.withAlphaComponent(normalOpacity)]
+                
+                let highlightedAttrs: [NSAttributedString.Key: Any] = [.font: font,
+                                                                       .foregroundColor: UIColor.black.withAlphaComponent(highlightedOpacity)]
+                
+                
+                // Range calculations
+                let wholeOffset = textView.offset(from: textView.beginningOfDocument, to: textView.endOfDocument)
+                let wholeRange = NSRange(location: 0, length: wholeOffset)
+                
+                // Now that we have both the starting and ending lines, we can create the entire selected range and apply styles across it
+                let selectedRangeStart = textView.offset(from: textView.beginningOfDocument, to: startingRange.start)
+                
+                // starting range or ending range
+                let selectedRangeEnd = textView.offset(from: textView.beginningOfDocument, to: endingRange.end)
+                
+                // Only change the te
                 // Finally, create the attributed text
                 let allAttributed = NSMutableAttributedString(string: textView.text!)
-            
+                
                 // Add the initial attributes
                 allAttributed.addAttributes(normalAttrs, range: wholeRange)
-            
+                
                 // Add the highlighted attributes
                 allAttributed.addAttributes(highlightedAttrs, range: NSRange(location: selectedRangeStart, length: selectedRangeEnd-selectedRangeStart))
-            
-                textView.attributedText = allAttributed
+                
+                // TODO: Check if the area / range is different from before
+                // If it is, animate the transition!
+                UIView.transition(with: textView, duration: 0.5, options: [.transitionCrossDissolve], animations: {
+                    textView.attributedText = allAttributed
+                }) { (completed) in
+                    print("Completed transition")
+                }
+            }
         }
         
-//        textView.text(in: startingRange)!.append(textView.text(in: endingRange))
-        // Figure this out
+        // TODO: textView.text(in: startingRange)!.append(textView.text(in: endingRange))
         return ""
         
     }
@@ -277,6 +304,10 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         
         let eyeBlinkRight = anchor.blendShapes[.eyeBlinkRight]?.floatValue ?? 0.0
         let eyeBlinkLeft = anchor.blendShapes[.eyeBlinkLeft]?.floatValue ?? 0.0
+        let browInnerUp = anchor.blendShapes[.browInnerUp]?.floatValue ?? 0.0
+        let browOuterRightDown = anchor.blendShapes[.browDownRight]?.floatValue ?? 0.0
+        let browOuterLeftDown = anchor.blendShapes[.browDownLeft]?.floatValue ?? 0.0
+
         let blinked = eyeBlinkRight > blinkThreshold || eyeBlinkLeft > blinkThreshold
         
         // Exit out of the update function if you notice a blink
@@ -310,7 +341,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             }
             
             // Add the latest position and keep up to some recent position to smooth with.
-            let smoothThresholdNumber = 20
+            let smoothThresholdNumber = 15
             
             self.eyeLookAtPositionXs.append((eyeRLookAt.x + eyeLLookAt.x) / 2)
             self.eyeLookAtPositionYs.append(-(eyeRLookAt.y + eyeLLookAt.y) / 2)
@@ -342,19 +373,25 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             // ["participantID", "highlighted", "textType", "timestamp", "gazeX", "gazeY", "eyeBlinkRight", "eyeBlinkLeft", "estText"]
             // Set the new data
             
-            newRow["participantID"] = self.participantID
-            newRow["highlighted"] = self.highlighted
-            newRow["testType"] = self.testType
-            newRow["textType"] = self.textType
-            newRow["timestamp"] = self.generateCurrentTimeStamp()
-            newRow["gazeX"] = adjustedX
-            newRow["gazeY"] = adjustedY
-            newRow["eyeBlinkRight"] = eyeBlinkRight
-            newRow["eyeBlinkLeft"] = eyeBlinkLeft
-            newRow["estText"] = estimatedText
-            
-            // Add the row to the data frame
-            self.df.addRow(row: newRow)
+            if self.recordingData {
+                
+                newRow["participantID"] = self.participantID
+                newRow["highlighted"] = self.highlighted
+                newRow["testType"] = self.testType
+                newRow["textType"] = self.textType
+                newRow["timestamp"] = self.generateCurrentTimeStamp()
+                newRow["gazeX"] = adjustedX
+                newRow["gazeY"] = adjustedY
+                newRow["eyeBlinkRight"] = eyeBlinkRight
+                newRow["eyeBlinkLeft"] = eyeBlinkLeft
+                newRow["browOuterRightDown"] = eyeBlinkLeft
+                newRow["browOuterLeftDown"] = eyeBlinkLeft
+                newRow["browInnerUp"] = eyeBlinkLeft
+                newRow["estText"] = estimatedText
+                
+                // Add the row to the data frame
+                self.df.addRow(row: newRow)
+            }
         }
     }
     
