@@ -107,7 +107,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         
         // Setup DataFrame
         // Set the headers
-        df.header = ["participantID", "highlighted", "textType", "timestamp", "gazeX", "gazeY", "eyeBlinkRight", "eyeBlinkLeft", "estText"]
+        df.header = ["participantID", "highlighted", "testType", "textType", "timestamp", "gazeX", "gazeY", "eyeBlinkRight", "eyeBlinkLeft", "estText"]
         df.name = "participant-\(self.participantID!)-\(self.testType!)"
         
         // Setup Design Elements
@@ -144,7 +144,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         attrTextView.isEditable = false
         attrTextView.isScrollEnabled = false
         
-        // MARK: EXPERIMENTAL VARIABL SETUP
+        // MARK: EXPERIMENTAL VARIABLE SETUP
         attrTextView.text = self.textType == "A" ? TEXT_A : TEXT_B
         attrTextView.font = UIFont.systemFont(ofSize: FONT_SIZE, weight: UIFont.Weight.regular)
     }
@@ -344,6 +344,7 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             
             newRow["participantID"] = self.participantID
             newRow["highlighted"] = self.highlighted
+            newRow["testType"] = self.testType
             newRow["textType"] = self.textType
             newRow["timestamp"] = self.generateCurrentTimeStamp()
             newRow["gazeX"] = adjustedX
@@ -353,11 +354,8 @@ class TestViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             newRow["estText"] = estimatedText
             
             // Add the row to the data frame
-            
             self.df.addRow(row: newRow)
-        
         }
-        
     }
     
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {

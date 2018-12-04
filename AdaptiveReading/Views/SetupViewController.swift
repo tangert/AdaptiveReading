@@ -15,9 +15,12 @@ class SetupViewController: UIViewController {
     @IBOutlet weak var highlightedSelector: UISegmentedControl!
     @IBOutlet weak var participantIDField: UITextField!
     @IBOutlet weak var testTypeSelector: UISegmentedControl!
+    @IBOutlet weak var startButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        startButton.layer.cornerRadius = 10
+        startButton.clipsToBounds = true
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
